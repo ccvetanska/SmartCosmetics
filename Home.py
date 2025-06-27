@@ -74,8 +74,8 @@ if st.button("See similar"):
         recommended_ingredients = row['ingredients'].split(', ')
         highlighted = []
         for ingr in recommended_ingredients:
-            is_base = ingr in base_ingredients
-            is_weighted = ingr in weighted_ingredients
+            is_base = ingr.strip().lower() in {b.strip().lower() for b in base_ingredients}
+            is_weighted = ingr.strip().lower() in {b.strip().lower() for b in weighted_ingredients}
 
             if is_weighted:
                 html = f"<span style='background-color:#fff3b0'>{ingr}</span>"
