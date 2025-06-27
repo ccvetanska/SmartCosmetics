@@ -2,6 +2,7 @@ import pandas as pd
 from surprise import Dataset, Reader, SVD, SVDpp
 from surprise.model_selection import train_test_split
 from surprise import accuracy
+from surprise.dump import dump
 from collections import defaultdict
 
 
@@ -42,8 +43,15 @@ def precision_recall_at_k(predictions, k, threshold):
         rec for rec in recalls.values()) / len(recalls)
 
 
-def train_and_eval(trainset, testset, algo, k, threshold):
-    algo.fit(trainset)
+def train_and_save_svd(trainset):
+    model = SVD()
+    model.fit(trainset)
+    dump("models/svd.pkl", algo=model)
+
+    return model
+
+
+def eval_svd(testset, algo, k, threshold):
     predictions = algo.test(testset)
 
     rmse = accuracy.rmse(predictions, verbose=False)
@@ -58,4 +66,5 @@ def train_and_eval(trainset, testset, algo, k, threshold):
 
 if __name__ == "__main__":
     trainset, testset = prepare_data()
-    train_and_eval(trainset, testset, SVD(), 5, 3.5)
+    model = train_and_save_svd(trainset)
+    eval_svd(testset, model, 5, 3.5)
