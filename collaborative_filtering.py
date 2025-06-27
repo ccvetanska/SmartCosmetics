@@ -56,15 +56,20 @@ def eval_svd(testset, algo, k, threshold):
 
     rmse = accuracy.rmse(predictions, verbose=False)
     precision, recall = precision_recall_at_k(predictions, k, threshold)
+    f1 = 2 * (precision * recall) / (precision + recall)
 
     print(f'Test RMSE: {round(rmse, 4)}')
     print(
         f'Test Precision@{k} with threshold {threshold}: {round(precision, 4)}'
     )
     print(f'Test Recall@{k} with threshold {threshold}: {round(recall, 4)}')
+    print(f'Test F1@{k} with threshold {threshold}: {round(f1, 4)}')
 
 
 if __name__ == "__main__":
     trainset, testset = prepare_data()
     model = train_and_save_svd(trainset)
+    eval_svd(testset, model, 5, 3.0)
     eval_svd(testset, model, 5, 3.5)
+    eval_svd(testset, model, 5, 4.0)
+    eval_svd(testset, model, 5, 4.5)
