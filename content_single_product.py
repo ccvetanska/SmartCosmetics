@@ -41,7 +41,6 @@ def recommend_products_similar_to(context, product_name, top_n=5, ingredient_wei
     weight_vector = np.ones(len(feature_names))
 
     if ingredient_weights:
-        # Normalize feature names and ingredient_weights keys
         feature_names_norm = [f.strip().lower() for f in feature_names]
         ingredient_weights_norm = {k.strip().lower(): v for k, v in ingredient_weights.items()}
 
@@ -59,8 +58,10 @@ def recommend_products_similar_to(context, product_name, top_n=5, ingredient_wei
             sim_scores = cosine_similarity(query_vector, mod_matrix).flatten()
     else:
         sim_scores = cosine_similarity(tfidf_matrix[idx], tfidf_matrix).flatten()
+        
     applied = [(f, weight_vector[i]) for i, f in enumerate(feature_names) if weight_vector[i] != 1.0]
     print("Applied weights:", applied)
+    
     sim_scores = list(enumerate(sim_scores))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     sim_scores = [s for s in sim_scores if s[0] != idx][:top_n]
@@ -76,5 +77,5 @@ if __name__ == '__main__':
         "indices": indices,
         "tfidf_matrix": tfidf_matrix
     }
-    print(recommend_products_similar_to(context, "Baomint Leave In Conditioning Styler", 
+    print(recommend_products_similar_to(context, "African Beauty Butter Collection Deluxe Tin (54 Thrones)", 
                                         top_n=5))
