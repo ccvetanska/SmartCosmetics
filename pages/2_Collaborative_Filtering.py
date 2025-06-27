@@ -9,7 +9,7 @@ from surprise.dump import load
 def login():
     username = st.text_input("Username")
     if st.button("Submit"):
-        st.session_state.username = username
+        st.session_state.username = str(username)
         st.rerun()
 
 
@@ -42,7 +42,7 @@ def get_recommendations(reviews):
     if len(user_reviews) < 5:
         return None
 
-    rated_products = user_reviews['product_id'].tolist()
+    rated_products = user_reviews['product_id'].unique()
     all_products = reviews['product_id'].unique()
     unseen = [p for p in all_products if p not in rated_products]
 
@@ -80,14 +80,21 @@ else:
     st.title(f"Hi, {st.session_state.username}! 👋")
     st.divider()
 
-    reviews = pd.read_csv("data/filtered_reviews_processed.csv")
+    reviews = pd.read_csv("data/filtered_reviews_processed.csv",
+                          dtype={'author_id': 'str'})
+    user_reviews = (reviews[reviews['author_id'] == st.session_state.username]
+                    ).reset_index(0)
+    user_reviews.index = user_reviews.index + 1
 
     st.subheader("Rate a product")
     col1, col2 = st.columns(2)
 
     with col1:
-        product_name = st.selectbox("Product",
-                                    reviews['product_name'].unique())
+        rated_products = user_reviews['product_name'].unique()
+        all_products = reviews['product_name'].unique()
+        unseen = [p for p in all_products if p not in rated_products]
+
+        product_name = st.selectbox("Product", unseen)
 
     with col2:
         rating = st.slider("Rating", min_value=1, max_value=5, value=3, step=1)
@@ -109,8 +116,10 @@ else:
     st.divider()
     st.subheader("Your reviews")
 
-    user_reviews = reviews[reviews['author_id'] ==
-                           st.session_state.username].reset_index(drop=True)
-    user_reviews.index = user_reviews.index + 1
+    display_df = user_reviews[['product_name',
+                               'rating']].rename(columns={
+                                   'product_name': 'Product Name',
+                                   'rating': 'Rating'
+                               })
 
-    st.table(user_reviews[['product_name', 'rating']])
+    st.table(display_df)
