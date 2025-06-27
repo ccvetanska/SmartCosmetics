@@ -32,7 +32,7 @@ def add_review(products, product_name, rating):
 
     reviews = pd.read_csv("data/filtered_reviews_processed.csv")
     reviews.loc[len(reviews)] = new_review
-    reviews.to_csv("data/filtered_reviews_processed.csv")
+    reviews.to_csv("data/filtered_reviews_processed.csv", index=False)
 
     reviews_count = (reviews['author_id'] == st.session_state.username).sum()
     if reviews_count >= 5:
@@ -64,3 +64,16 @@ else:
 
     if st.button("Submit", use_container_width=True):
         add_review(products, product_name, rating)
+
+    st.divider()
+    st.subheader("Recommended for you")
+
+    st.divider()
+    st.subheader("Your reviews")
+
+    reviews = pd.read_csv("data/filtered_reviews_processed.csv")
+    user_reviews = reviews[reviews['author_id'] ==
+                           st.session_state.username].reset_index(drop=True)
+    user_reviews.index = user_reviews.index + 1
+
+    st.table(user_reviews[['product_name', 'rating']])
