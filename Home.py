@@ -3,7 +3,12 @@ from content_single_product import prepare_data_single_product, recommend_produc
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-df, feature_names, indices, tfidf_matrix = prepare_data_single_product('data/product_info_cosmetics.csv')
+st.image(
+    "https://as1.ftcdn.net/v2/jpg/02/09/37/22/1000_F_209372242_IlSCLiys8H6TF1ePlC0EVuxS25Al4KEC.jpg",
+    use_container_width=True)
+
+df, feature_names, indices, tfidf_matrix = prepare_data_single_product(
+    'data/product_info_cosmetics.csv')
 context = {
     "df": df,
     "feature_names": feature_names,
@@ -13,30 +18,33 @@ context = {
 
 st.title("Welcome to SmartCosmetics!")
 
-st.write("Here, you can select a product and get ones that are similar to it by ingredients.")
+st.write(
+    "Here, you can select a product and get ones that are similar to it by ingredients."
+)
 
 product_name = st.selectbox("Choose product:", df['product_name'].unique())
 
-product_ingredients = df.loc[df['product_name'] == product_name, 'ingredients'].values[0]
+product_ingredients = df.loc[df['product_name'] == product_name,
+                             'ingredients'].values[0]
 ingredient_list = product_ingredients.split(', ')
 
 st.subheader("Ingredients of the selected product:")
 st.code(product_ingredients, language='markdown', height=200, wrap_lines=True)
 
-selected_ingredients = st.multiselect("Which of the ingredients are important for you?", ingredient_list)
+selected_ingredients = st.multiselect(
+    "Which of the ingredients are important for you?", ingredient_list)
 
 ingredient_weights = {}
 for ingr in selected_ingredients:
     weight = st.slider(f"Weight for '{ingr}'", 1.0, 5.0, 2.0, 0.1)
-    ingredient_weights[ingr] = weight ** 2
+    ingredient_weights[ingr] = weight**2
 
 if st.button("See similar"):
     results = recommend_products_similar_to(
         product_name=product_name,
         top_n=10,
         ingredient_weights=ingredient_weights,
-        context=context
-    )
+        context=context)
     st.subheader("Recommended:")
 
     base_ingredients = set(ingredient_list)
@@ -54,12 +62,14 @@ if st.button("See similar"):
         query_vector = context["tfidf_matrix"][idx].multiply(weight_vector)
         cosine_scores = cosine_similarity(query_vector, mod_matrix).flatten()
     else:
-        cosine_scores = cosine_similarity(context["tfidf_matrix"][idx], context["tfidf_matrix"]).flatten()
+        cosine_scores = cosine_similarity(context["tfidf_matrix"][idx],
+                                          context["tfidf_matrix"]).flatten()
 
     for i, row in results.iterrows():
         product_idx = row.name
         similarity = cosine_scores[product_idx]
-        st.markdown(f"**{row['product_name']}** – _Similarity: {similarity:.2%}_")
+        st.markdown(
+            f"**{row['product_name']}** – _Similarity: {similarity:.2%}_")
 
         recommended_ingredients = row['ingredients'].split(', ')
         highlighted = []
